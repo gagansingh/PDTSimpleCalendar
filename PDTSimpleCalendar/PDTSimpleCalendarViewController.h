@@ -137,4 +137,14 @@
  */
 - (UIColor *)simpleCalendarViewController:(PDTSimpleCalendarViewController *)controller textColorForDate:(NSDate *)date;
 
+- (NSUInteger)simpleCalendarViewControllerNumberOfCalendars:(PDTSimpleCalendarViewController *)controller;
+
+- (UIColor *)simpleCalendarViewController:(PDTSimpleCalendarViewController *)controller colorForCalendar:(NSUInteger)calendar forDate:(NSDate *)date;
+
+- (NSUInteger)simpleCalendarViewController:(PDTSimpleCalendarViewController *)controller numberOfEventsForDate:(NSDate *)date inCalendar:(NSUInteger)calendar;
+
 @end;
+
+
+
+

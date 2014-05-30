@@ -580,4 +580,37 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     return nil;
 }
 
+- (NSUInteger)simpleCalendarViewCellNumberOfCalendars:(PDTSimpleCalendarViewCell *)cell
+{
+  NSUInteger number = 0;
+  
+  if ([self.delegate respondsToSelector:@selector(simpleCalendarViewControllerNumberOfCalendars:)]) {
+    number = [self.delegate simpleCalendarViewControllerNumberOfCalendars:self];
+  }
+  
+  return number;
+}
+
+- (UIColor *)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell colorForCalendar:(NSUInteger)calendar forDate:(NSDate *)date
+{
+  UIColor *color = nil;
+  
+  if ([self.delegate respondsToSelector:@selector(simpleCalendarViewController:colorForCalendar:forDate:)]) {
+    color = [self.delegate simpleCalendarViewController:self colorForCalendar:calendar forDate:date];
+  }
+  
+  return color;
+}
+
+- (NSUInteger)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell numberOfEventsForDate:(NSDate *)date inCalendar:(NSUInteger)calendar
+{
+  NSUInteger number = 0;
+  
+  if ([self.delegate respondsToSelector:@selector(simpleCalendarViewCell:numberOfEventsForDate:inCalendar:)]) {
+    number = [self.delegate simpleCalendarViewController:self numberOfEventsForDate:date inCalendar:calendar];
+  }
+  
+  return number;
+}
+
 @end

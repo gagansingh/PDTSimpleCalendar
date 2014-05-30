@@ -44,6 +44,12 @@
  */
 - (UIColor *)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell circleColorForDate:(NSDate *)date;
 
+- (NSUInteger)simpleCalendarViewCellNumberOfCalendars:(PDTSimpleCalendarViewCell *)cell;
+
+- (UIColor *)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell colorForCalendar:(NSUInteger)calendar forDate:(NSDate *)date;
+
+- (NSUInteger)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell numberOfEventsForDate:(NSDate *)date inCalendar:(NSUInteger)calendar;
+
 @end
 
 #import <UIKit/UIKit.h>
