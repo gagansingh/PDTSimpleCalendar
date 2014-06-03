@@ -90,6 +90,11 @@
  */
 - (void)scrollToDate:(NSDate *)date animated:(BOOL)animated;
 
+/**
+  Reload the cell assocaited with date.
+ */
+- (void)reloadDate:(NSDate *)date;
+
 @end
 
 
