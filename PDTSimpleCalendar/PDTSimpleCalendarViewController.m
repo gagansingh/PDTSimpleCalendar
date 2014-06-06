@@ -252,7 +252,8 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 - (void)reloadDate:(NSDate *)date
 {
   NSIndexPath *indexPath = [self indexPathForCellAtDate:date];
-  [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+  if (indexPath)
+    [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
 }
 
 #pragma mark - View LifeCycle
