@@ -1,6 +1,10 @@
 PDTSimpleCalendar
 =================
 
+##Fork Note
+
+This fork makes it so that a little colored circle appears underneath the date label, if there is at least one event on that date. Some delegate methods have been added to customize the color of that circle.
+
 [![Pod version](https://img.shields.io/cocoapods/v/PDTSimpleCalendar.svg?style=flat)](http://cocoadocs.org/docsets/PDTSimpleCalendar)
 [![Build Status](https://img.shields.io/travis/jivesoftware/PDTSimpleCalendar.svg?style=flat)](https://travis-ci.org/jivesoftware/PDTSimpleCalendar)
 
