@@ -38,7 +38,8 @@
 
 /**
  *  Selected date displayed by the calendar.
- *  Changing this value will cause the calendar to scroll to this date (without animation).
+ *  Changing this value will not cause the calendar to scroll to this date.
+ *  You need to manually call scrollToSelectedDate:(BOOL)animated if you want this behavior.
  */
 @property (nonatomic, strong) NSDate *selectedDate;
 
@@ -105,6 +106,16 @@
 @protocol PDTSimpleCalendarViewDelegate <NSObject>
 
 @optional
+
+/**
+ *  Asks the delegate if the Calendar may enable selection for the specified date
+ *
+ *  @param controller the calendarView Controller
+ *  @param date       the date (Midnight GMT)
+ *
+ *  @return YES if the calendar can select the specified date, NO otherwise.
+ */
+- (BOOL)simpleCalendarViewController:(PDTSimpleCalendarViewController *)controller isEnabledDate:(NSDate *)date;
 
 /**
  *  Tells the delegate that a date was selected by the user.

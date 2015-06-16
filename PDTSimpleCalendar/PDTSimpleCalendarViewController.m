@@ -86,6 +86,17 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     self.daysPerWeek = 7;
 }
 
+#pragma mark - View Lifecycle
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+
+    if (self.selectedDate) {
+        [self.collectionViewLayout invalidateLayout];
+    }
+}
+
 #pragma mark - Accessors
 
 - (NSDateFormatter *)headerDateFormatter;
@@ -482,6 +493,10 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
         return NO;
     }
 
+    if ([self.delegate respondsToSelector:@selector(simpleCalendarViewController:isEnabledDate:)]) {
+        return [self.delegate simpleCalendarViewController:self isEnabledDate:date];
+    }
+
     return YES;
 }
 
@@ -583,7 +598,7 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     if ([self.delegate respondsToSelector:@selector(simpleCalendarViewController:textColorForDate:)]) {
         return [self.delegate simpleCalendarViewController:self textColorForDate:date];
     }
-    
+
     return nil;
 }
 
