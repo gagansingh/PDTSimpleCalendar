@@ -15,7 +15,7 @@ const CGFloat PDTSimpleCalendarCircleSize = 32.0f;
 @property (nonatomic, strong) UILabel *dayLabel;
 @property (nonatomic, strong) NSDate *date;
 @property (nonatomic, strong) UIView *eventCircleContainer;
-
+@property (nonatomic, strong) UIImageView *overlayImage;
 @end
 
 @implementation PDTSimpleCalendarViewCell
@@ -104,6 +104,7 @@ const CGFloat PDTSimpleCalendarCircleSize = 32.0f;
         day = [PDTSimpleCalendarViewCell formatDate:date withCalendar:calendar];
         accessibilityDay = [PDTSimpleCalendarViewCell formatAccessibilityDate:date withCalendar:calendar];
       [self configureEventCircles:date calendar:calendar];
+      [self configureOverlayImageForDate:date];
     }
     self.dayLabel.text = day;
     self.dayLabel.accessibilityLabel = accessibilityDay;
@@ -189,6 +190,50 @@ const CGFloat PDTSimpleCalendarCircleSize = 32.0f;
   
 }
 
+- (void)configureOverlayImageForDate:(NSDate *)date
+{
+  UIImage *overlayImage = [self.delegate simpleCalendarViewCell:self overlayImageForDate:date];
+  if (overlayImage != nil) {
+    self.overlayImage = [[UIImageView alloc] initWithImage:overlayImage];
+    [self.overlayImage setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [self.overlayImage setFrame:self.frame];
+    [self addSubview:self.overlayImage];
+    
+    NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:self.overlayImage
+                                                                      attribute:NSLayoutAttributeLeading
+                                                                      relatedBy:NSLayoutRelationEqual
+                                                                         toItem:self
+                                                                      attribute:NSLayoutAttributeLeading
+                                                                     multiplier:1.f
+                                                                       constant:0];
+    
+    NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.overlayImage
+                                                                     attribute:NSLayoutAttributeTop
+                                                                     relatedBy:NSLayoutRelationEqual
+                                                                        toItem:self
+                                                                     attribute:NSLayoutAttributeTop
+                                                                    multiplier:1.f
+                                                                      constant:0];
+    
+    NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:self
+                                                                       attribute:NSLayoutAttributeTrailing
+                                                                       relatedBy:NSLayoutRelationEqual
+                                                                          toItem:self.overlayImage
+                                                                       attribute:NSLayoutAttributeTrailing
+                                                                      multiplier:1.f
+                                                                        constant:0];
+    
+    NSLayoutConstraint *bottomContraint = [NSLayoutConstraint constraintWithItem:self
+                                                                       attribute:NSLayoutAttributeBottom
+                                                                       relatedBy:NSLayoutRelationEqual
+                                                                          toItem:self.overlayImage
+                                                                       attribute:NSLayoutAttributeBottom
+                                                                      multiplier:1.f
+                                                                        constant:0];
+    [self addConstraints:@[leftConstraint, topConstraint, rightConstraint, bottomContraint]];
+  }
+}
+
 - (void)setIsToday:(BOOL)isToday
 {
     _isToday = isToday;
@@ -247,6 +292,7 @@ const CGFloat PDTSimpleCalendarCircleSize = 32.0f;
     [self.dayLabel setBackgroundColor:[self circleDefaultColor]];
     [self.dayLabel setTextColor:[self textDefaultColor]];
     [self.eventCircleContainer removeFromSuperview];
+    [self.overlayImage removeFromSuperview];
 }
 
 #pragma mark - Circle Color Customization Methods

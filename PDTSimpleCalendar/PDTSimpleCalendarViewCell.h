@@ -53,6 +53,7 @@
 
 - (NSUInteger)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell numberOfEventsForDate:(NSDate *)date inCalendar:(NSUInteger)calendar;
 
+- (UIImage *)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell overlayImageForDate:(NSDate *)date;
 @end
 
 #import <UIKit/UIKit.h>
