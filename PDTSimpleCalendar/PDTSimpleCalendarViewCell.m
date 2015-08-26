@@ -192,45 +192,47 @@ const CGFloat PDTSimpleCalendarCircleSize = 32.0f;
 
 - (void)configureOverlayImageForDate:(NSDate *)date
 {
-  UIImage *overlayImage = [self.delegate simpleCalendarViewCell:self overlayImageForDate:date];
-  if (overlayImage != nil) {
-    self.overlayImage = [[UIImageView alloc] initWithImage:overlayImage];
-    [self.overlayImage setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [self.overlayImage setFrame:self.frame];
-    [self addSubview:self.overlayImage];
-    
-    NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:self.overlayImage
-                                                                      attribute:NSLayoutAttributeLeading
-                                                                      relatedBy:NSLayoutRelationEqual
-                                                                         toItem:self
-                                                                      attribute:NSLayoutAttributeLeading
-                                                                     multiplier:1.f
-                                                                       constant:0];
-    
-    NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.overlayImage
-                                                                     attribute:NSLayoutAttributeTop
-                                                                     relatedBy:NSLayoutRelationEqual
-                                                                        toItem:self
-                                                                     attribute:NSLayoutAttributeTop
-                                                                    multiplier:1.f
-                                                                      constant:0];
-    
-    NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:self
-                                                                       attribute:NSLayoutAttributeTrailing
+  if ([self.delegate respondsToSelector:@selector(simpleCalendarViewCell:overlayImageForDate:)]) {
+    UIImage *overlayImage = [self.delegate simpleCalendarViewCell:self overlayImageForDate:date];
+    if (overlayImage != nil) {
+      self.overlayImage = [[UIImageView alloc] initWithImage:overlayImage];
+      [self.overlayImage setTranslatesAutoresizingMaskIntoConstraints:NO];
+      [self.overlayImage setFrame:self.frame];
+      [self addSubview:self.overlayImage];
+      
+      NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:self.overlayImage
+                                                                        attribute:NSLayoutAttributeLeading
+                                                                        relatedBy:NSLayoutRelationEqual
+                                                                           toItem:self
+                                                                        attribute:NSLayoutAttributeLeading
+                                                                       multiplier:1.f
+                                                                         constant:0];
+      
+      NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:self.overlayImage
+                                                                       attribute:NSLayoutAttributeTop
                                                                        relatedBy:NSLayoutRelationEqual
-                                                                          toItem:self.overlayImage
-                                                                       attribute:NSLayoutAttributeTrailing
+                                                                          toItem:self
+                                                                       attribute:NSLayoutAttributeTop
                                                                       multiplier:1.f
                                                                         constant:0];
-    
-    NSLayoutConstraint *bottomContraint = [NSLayoutConstraint constraintWithItem:self
-                                                                       attribute:NSLayoutAttributeBottom
-                                                                       relatedBy:NSLayoutRelationEqual
-                                                                          toItem:self.overlayImage
-                                                                       attribute:NSLayoutAttributeBottom
-                                                                      multiplier:1.f
-                                                                        constant:0];
-    [self addConstraints:@[leftConstraint, topConstraint, rightConstraint, bottomContraint]];
+      
+      NSLayoutConstraint *rightConstraint = [NSLayoutConstraint constraintWithItem:self
+                                                                         attribute:NSLayoutAttributeTrailing
+                                                                         relatedBy:NSLayoutRelationEqual
+                                                                            toItem:self.overlayImage
+                                                                         attribute:NSLayoutAttributeTrailing
+                                                                        multiplier:1.f
+                                                                          constant:0];
+      
+      NSLayoutConstraint *bottomContraint = [NSLayoutConstraint constraintWithItem:self
+                                                                         attribute:NSLayoutAttributeBottom
+                                                                         relatedBy:NSLayoutRelationEqual
+                                                                            toItem:self.overlayImage
+                                                                         attribute:NSLayoutAttributeBottom
+                                                                        multiplier:1.f
+                                                                          constant:0];
+      [self addConstraints:@[leftConstraint, topConstraint, rightConstraint, bottomContraint]];
+    }
   }
 }
 
