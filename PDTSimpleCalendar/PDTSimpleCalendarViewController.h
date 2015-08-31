@@ -103,6 +103,12 @@
  */
 - (void)reloadDate:(NSDate *)date;
 
+
+/**
+ Short animation for emphasising a specific date.
+ */
+- (void)animateDateForEmphasis:(NSDate *)date completion:(void (^)(BOOL finished))completion;
+
 @end
 
 

@@ -270,6 +270,34 @@ static const NSCalendarUnit kCalendarUnitYMD = NSCalendarUnitYear | NSCalendarUn
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
 }
 
+- (void)animateDateForEmphasis:(NSDate *)date completion:(void (^)(BOOL finished))completion
+{
+  PDTSimpleCalendarViewCell *cell = [self cellForItemAtDate:date];
+  if (cell != nil) {
+    [UIView animateWithDuration:0.175
+                          delay:0
+         usingSpringWithDamping:0.8
+          initialSpringVelocity:0.5
+                        options:0
+                     animations:^{
+                       cell.layer.transform = CATransform3DMakeScale(1.5, 1.5, 1);
+                     }
+                     completion:^(BOOL finished) {
+                       [UIView animateWithDuration:0.175
+                                             delay:0
+                            usingSpringWithDamping:0.8
+                             initialSpringVelocity:0.5
+                                           options:0
+                                        animations:^{
+                                          cell.layer.transform = CATransform3DMakeScale(1, 1, 1);
+                                        }
+                                        completion:^(BOOL finished) {
+                                          if (completion != nil) { completion(finished); }
+                                        }];
+                     }];
+  }
+}
+
 #pragma mark - View LifeCycle
 
 - (void)viewDidLoad
