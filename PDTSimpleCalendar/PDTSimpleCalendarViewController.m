@@ -15,18 +15,20 @@
 
 const CGFloat PDTSimpleCalendarOverlaySize = 14.0f;
 
-static NSString *PDTSimpleCalendarViewCellIdentifier = @"com.producteev.collection.cell.identifier";
-static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collection.header.identifier";
-
+static NSString *const PDTSimpleCalendarViewCellIdentifier = @"com.producteev.collection.cell.identifier";
+static NSString *const PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collection.header.identifier";
+static const NSCalendarUnit kCalendarUnitYMD = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay;
 
 @interface PDTSimpleCalendarViewController () <PDTSimpleCalendarViewCellDelegate>
 
 @property (nonatomic, strong) UILabel *overlayView;
 @property (nonatomic, strong) NSDateFormatter *headerDateFormatter; //Will be used to format date in header view and on scroll.
 
+@property (nonatomic, strong) PDTSimpleCalendarViewWeekdayHeader *weekdayHeader;
+
 // First and last date of the months based on the public properties first & lastDate
-@property (nonatomic, readonly) NSDate *firstDateMonth;
-@property (nonatomic, readonly) NSDate *lastDateMonth;
+@property (nonatomic) NSDate *firstDateMonth;
+@property (nonatomic) NSDate *lastDateMonth;
 
 //Number of days per week
 @property (nonatomic, assign) NSUInteger daysPerWeek;
@@ -84,6 +86,8 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     self.backgroundColor = [UIColor whiteColor];
     self.overlayTextColor = [UIColor blackColor];
     self.daysPerWeek = 7;
+    self.weekdayHeaderEnabled = NO;
+    self.weekdayTextType = PDTSimpleCalendarViewWeekdayTextTypeShort;
 }
 
 #pragma mark - View Lifecycle
@@ -127,7 +131,7 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 - (NSDate *)firstDate
 {
     if (!_firstDate) {
-        NSDateComponents *components = [self.calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay
+        NSDateComponents *components = [self.calendar components:kCalendarUnitYMD
                                                         fromDate:[NSDate date]];
         components.day = 1;
         _firstDate = [self.calendar dateFromComponents:components];
@@ -138,17 +142,20 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 
 - (void)setFirstDate:(NSDate *)firstDate
 {
-    _firstDate = [self clampDate:firstDate toComponents:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay];
+    _firstDate = [self clampDate:firstDate toComponents:kCalendarUnitYMD];
 }
 
-//TODO: Store the value in the variable to avoid calculation everytime.
 - (NSDate *)firstDateMonth
 {
-    NSDateComponents *components = [self.calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay
+    if (_firstDateMonth) { return _firstDateMonth; }
+
+    NSDateComponents *components = [self.calendar components:kCalendarUnitYMD
                                                     fromDate:self.firstDate];
     components.day = 1;
 
-    return [self.calendar dateFromComponents:components];
+    _firstDateMonth = [self.calendar dateFromComponents:components];
+
+    return _firstDateMonth;
 }
 
 - (NSDate *)lastDate
@@ -165,17 +172,21 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 
 - (void)setLastDate:(NSDate *)lastDate
 {
-    _lastDate = [self clampDate:lastDate toComponents:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay];
+    _lastDate = [self clampDate:lastDate toComponents:kCalendarUnitYMD];
 }
 
-//TODO: Store the value in the variable to avoid calculation everytime.
 - (NSDate *)lastDateMonth
 {
-    NSDateComponents *components = [self.calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:self.lastDate];
+    if (_lastDateMonth) { return _lastDateMonth; }
+
+    NSDateComponents *components = [self.calendar components:kCalendarUnitYMD
+                                                    fromDate:self.lastDate];
     components.month++;
     components.day = 0;
 
-    return [self.calendar dateFromComponents:components];
+    _lastDateMonth = [self.calendar dateFromComponents:components];
+
+    return _lastDateMonth;
 }
 
 - (void)setSelectedDate:(NSDate *)newSelectedDate
@@ -208,14 +219,6 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     if ([self.delegate respondsToSelector:@selector(simpleCalendarViewController:didSelectDate:)]) {
         [self.delegate simpleCalendarViewController:self didSelectDate:self.selectedDate];
     }
-}
-
-//Deprecated, You need to use setSelectedDate: and call scrollToDate:animated: or scrollToSelectedDate:animated:
-//TODO: Remove this in next release
-- (void)setSelectedDate:(NSDate *)newSelectedDate animated:(BOOL)animated
-{
-    [self setSelectedDate:newSelectedDate];
-    [self scrollToSelectedDate:animated];
 }
 
 #pragma mark - Scroll to a specific date
@@ -291,11 +294,23 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 
     [self.view addSubview:self.overlayView];
     [self.overlayView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    NSDictionary *viewsDictionary = @{@"overlayView": self.overlayView};
-    NSDictionary *metricsDictionary = @{@"overlayViewHeight": @(PDTSimpleCalendarFlowLayoutHeaderHeight)};
+    
+    //Configure the Weekday Header
+    self.weekdayHeader = [[PDTSimpleCalendarViewWeekdayHeader alloc] initWithCalendar:self.calendar weekdayTextType:self.weekdayTextType];
+    
+    [self.view addSubview:self.weekdayHeader];
+    [self.weekdayHeader setTranslatesAutoresizingMaskIntoConstraints:NO];
+    
+    NSInteger weekdayHeaderHeight = self.weekdayHeaderEnabled ? PDTSimpleCalendarWeekdayHeaderHeight : 0;
+
+    NSDictionary *viewsDictionary = @{@"overlayView": self.overlayView, @"weekdayHeader": self.weekdayHeader};
+    NSDictionary *metricsDictionary = @{@"overlayViewHeight": @(PDTSimpleCalendarFlowLayoutHeaderHeight), @"weekdayHeaderHeight": @(weekdayHeaderHeight)};
 
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|[overlayView]|" options:NSLayoutFormatAlignAllTop metrics:nil views:viewsDictionary]];
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[overlayView(==overlayViewHeight)]" options:NSLayoutFormatAlignAllTop metrics:metricsDictionary views:viewsDictionary]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|[weekdayHeader]|" options:NSLayoutFormatAlignAllTop metrics:nil views:viewsDictionary]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[weekdayHeader(weekdayHeaderHeight)][overlayView(overlayViewHeight)]" options:0 metrics:metricsDictionary views:viewsDictionary]];
+    
+    [self.collectionView setContentInset:UIEdgeInsetsMake(weekdayHeaderHeight, 0, 0, 0)];
 }
 
 #pragma mark - Rotation Handling
@@ -318,9 +333,30 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 {
     NSDate *firstOfMonth = [self firstOfMonthForSection:section];
     NSRange rangeOfWeeks = [self.calendar rangeOfUnit:NSCalendarUnitWeekOfMonth inUnit:NSCalendarUnitMonth forDate:firstOfMonth];
-
     //We need the number of calendar weeks for the full months (it will maybe include previous month and next months cells)
     return (rangeOfWeeks.length * self.daysPerWeek);
+}
+
+/**
+ * https://github.com/jivesoftware/PDTSimpleCalendar/issues/69
+ * On iOS7, using NSCalendarUnitWeekOfMonth (or WeekOfYear) in rangeOfUnit:inUnit is returning NSNotFound, NSNotFound
+ * Fun stuff, definition of NSNotFound is enum {NSNotFound = NSIntegerMax};
+ * So on iOS7, we're trying to allocate NSIntegerMax * 7 cells per Section
+ *
+ * //TODO: Remove when removing iOS7 Support
+ *
+ *  @return the proper NSCalendarUnit to use in rangeOfUnit:inUnit
+ */
+- (NSCalendarUnit)weekCalendarUnitDependingOniOSVersion {
+    //isDateInToday is a new (awesome) method available on iOS8 only.
+    if ([self.calendar respondsToSelector:@selector(isDateInToday:)]) {
+        return NSCalendarUnitWeekOfMonth;
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return NSWeekCalendarUnit;
+#pragma clang diagnostic pop
+    }
 }
 
 
@@ -527,9 +563,12 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
 - (NSDate *)dateForCellAtIndexPath:(NSIndexPath *)indexPath
 {
     NSDate *firstOfMonth = [self firstOfMonthForSection:indexPath.section];
-    NSInteger ordinalityOfFirstDay = [self.calendar ordinalityOfUnit:NSCalendarUnitDay inUnit:NSCalendarUnitWeekOfMonth forDate:firstOfMonth];
+    NSUInteger weekday = [[self.calendar components: NSCalendarUnitWeekday fromDate: firstOfMonth] weekday];
+    NSInteger startOffset = weekday - self.calendar.firstWeekday;
+    startOffset += startOffset >= 0 ? 0 : self.daysPerWeek;
+
     NSDateComponents *dateComponents = [NSDateComponents new];
-    dateComponents.day = (1 - ordinalityOfFirstDay) + indexPath.item;
+    dateComponents.day = indexPath.item - startOffset;
 
     return [self.calendar dateByAddingComponents:dateComponents toDate:firstOfMonth options:0];
 }
@@ -540,12 +579,13 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     if (!date) {
         return nil;
     }
-
     NSInteger section = [self sectionForDate:date];
-
     NSDate *firstOfMonth = [self firstOfMonthForSection:section];
     NSInteger ordinalityOfFirstDay = [self.calendar ordinalityOfUnit:NSCalendarUnitDay inUnit:NSCalendarUnitWeekOfMonth forDate:firstOfMonth];
 
+    NSInteger weekday = [[self.calendar components: NSCalendarUnitWeekday fromDate: firstOfMonth] weekday];
+    NSInteger startOffset = weekday - self.calendar.firstWeekday;
+    startOffset += startOffset >= 0 ? 0 : self.daysPerWeek;
 
     NSDateComponents *dateComponents = [self.calendar components:NSCalendarUnitDay fromDate:date];
     NSDateComponents *firstOfMonthComponents = [self.calendar components:NSCalendarUnitDay fromDate:firstOfMonth];
@@ -559,7 +599,7 @@ static NSString *PDTSimpleCalendarViewHeaderIdentifier = @"com.producteev.collec
     return (PDTSimpleCalendarViewCell *)[self.collectionView cellForItemAtIndexPath:[self indexPathForCellAtDate:date]];
 }
 
-#pragma mark PDTSimpleCalendarViewCellDelegate
+#pragma mark - PDTSimpleCalendarViewCellDelegate
 
 - (BOOL)simpleCalendarViewCell:(PDTSimpleCalendarViewCell *)cell shouldUseCustomColorsForDate:(NSDate *)date
 {
