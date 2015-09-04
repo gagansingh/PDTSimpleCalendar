@@ -270,6 +270,18 @@ static const NSCalendarUnit kCalendarUnitYMD = NSCalendarUnitYear | NSCalendarUn
     [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
 }
 
+- (void)reloadDates:(NSArray *)dates
+{
+  NSMutableArray *indexPaths = [[NSMutableArray alloc] initWithCapacity:dates.count];
+  for (NSDate *date in dates) {
+    NSIndexPath *indexPath = [self indexPathForCellAtDate:date];
+    if (indexPath) {
+      [indexPaths addObject:indexPath];
+    }
+  }
+  [self.collectionView reloadItemsAtIndexPaths:indexPaths];
+}
+
 - (void)animateDateForEmphasis:(NSDate *)date completion:(void (^)(BOOL finished))completion
 {
   PDTSimpleCalendarViewCell *cell = [self cellForItemAtDate:date];

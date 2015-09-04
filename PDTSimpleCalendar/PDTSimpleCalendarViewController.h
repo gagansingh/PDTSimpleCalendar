@@ -103,6 +103,11 @@
  */
 - (void)reloadDate:(NSDate *)date;
 
+/**
+ Reload the cells associated with the dates.
+ */
+- (void)reloadDates:(NSArray *)dates;
+
 
 /**
  Short animation for emphasising a specific date.
